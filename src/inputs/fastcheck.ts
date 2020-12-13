@@ -10,7 +10,7 @@ type Fci<A> = lib.IxO<URI, A>
 type StrInputs =
   {type: "hexa" | "base64" | "char" | "ascii" | "unicode" | "char16bits" | "fullUnicode" |
     "ipV4" | "ipV4Extended" | "ipV6" | "uuid" | "domain" | "webAuthority" |
-    "webFragments" | "webQueryParameters" | "webSegments" | "emailAddress"} |
+    "webFragments" | "webQueryParameters" | "webSegment" | "emailAddress"} |
   {type: "webUrl"} & fc.WebUrlConstraints |
   {type: "uuidV", version: 1 | 2 | 3 | 4 | 5} |
   {type: "hexaString" | "base64String" | "string" | "asciiString" |
@@ -24,10 +24,11 @@ type NumInputs =
   {type: "integer"} & fc.IntegerConstraints |
   {type: "nat"} & fc.NatConstraints |
   {type: "float"} & fc.FloatConstraints |
-  {type: "double"} & fc.DoubleConstraints |
-  {type: "bigInt"} & fc.BigIntConstraints |
-  {type: "bigUInt"} & fc.BigUintConstraints |
-  {type: "bigIntN" | "bigUIntN", n: number}
+  {type: "double"} & fc.DoubleConstraints //|
+  // These return a different type. Determine whether to support `bigint`
+  /*{type: "bigInt"} & fc.BigIntConstraints |
+  {type: "bigUint"} & fc.BigUintConstraints |
+  {type: "bigIntN" | "bigUintN", n: number}*/
 export type Num = Fci<NumInputs>
 
 export type Date = Fci<{min?: builtins.JSDate, max?: builtins.JSDate}>
@@ -43,6 +44,8 @@ export type Dict = {}
 
 declare module '../index' {
   export interface GenInputs<A> {
-    FastCheckRecurse: FCRec<A>
+    FastCheck_recurse: FCRec<A>
+    FastCheck_option?: {freq?: number}
+    FastCheck_array?: fc.ArrayConstraints
   }
 }

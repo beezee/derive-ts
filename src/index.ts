@@ -20,12 +20,12 @@ export type InputOf<F extends GenInput, A> =
 
 export type Ix<K extends string, A> = { readonly [key in K]: A }
 export type IxO<K extends string, A> = { readonly [key in K]?: A }
-export type Alg<K extends string, F extends Interp, I, A> = Ix<K, (i: I) => Result<F, A>>
+export type Alg<K extends string, F extends Interp, I extends object, A> = Ix<K, <T extends t.Exact<I, T>>(i: T) => Result<F, A>>
 
-export type Str<F extends Interp, I = {}> = Alg<'string', F, I, string>;
-export type Num<F extends Interp, I = {}> = Alg<'number', F, I, number>;
+export type Str<F extends Interp, I extends object = {}> = Alg<'string', F, I, string>;
+export type Num<F extends Interp, I extends object = {}> = Alg<'number', F, I, number>;
 
-export type Date<F extends Interp, I = {}> = Alg<'date', F, I, builtins.JSDate>
+export type Date<F extends Interp, I extends object = {}> = Alg<'date', F, I, builtins.JSDate>
 
 export type Option<F extends Interp, I extends GenInput = "Unknown"> = {
   readonly option: <A>(res: Result<F, A>, i: InputOf<I, A>) => Result<F, o.Option<A>>

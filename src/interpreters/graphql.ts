@@ -21,7 +21,7 @@ const gqlChild = (gql: GQL): string =>
 const gqlPrim = (tpe: string): GQL =>
   ({prefix: '', tpe, children: '', optional: false, array: false})
 
-type GQLAlg = lib.Recurse<'GraphQL', 'GQLRecurse'> & lib.Str<'GraphQL'> & lib.Num<'GraphQL'> & 
+type GQLAlg = lib.Recurse<'GraphQL', 'GQL_recurse'> & lib.Str<'GraphQL'> & lib.Num<'GraphQL'> & 
   lib.Dict<'GraphQL', lib.Named> & lib.Option<'GraphQL'> & lib.Array<'GraphQL'>
 export const GQL: () => GQLAlg = () => {
   const cache = lib.memo({})
