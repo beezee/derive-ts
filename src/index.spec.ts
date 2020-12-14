@@ -15,6 +15,9 @@ const thingProps = <F extends lib.Output>(T: Alg<F>) => ({
   bar: T.number({FastCheck: {type: "float", max: 10}}),
   tail: T.recurse('Thing', () => thing<F>().run(T),
       (x) => T.array(T.option(x, {}), {FastCheck: {minLength: 3, maxLength: 3}}),
+      {FastCheck: {baseCase: []}}),
+  tail2: T.recurse('Thing', () => thing<F>().run(T),
+      (x) => T.array(x, {FastCheck: {minLength: 1, maxLength: 2}}),
       {FastCheck: {baseCase: []}})
 });
 
