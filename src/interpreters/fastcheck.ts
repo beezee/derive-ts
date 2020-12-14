@@ -1,19 +1,19 @@
 import * as fn from 'fp-ts/function';
 import * as o from 'fp-ts/Option';
 import * as fc from 'fast-check';
-import * as fci from '../inputs/fastcheck';
 import * as lib from '../index';
 
 export const URI = 'FastCheck' as const
 export type URI = typeof URI
 
 declare module '../index' {
-  export interface Interps<A> {
+  export interface Outputs<A> {
     [URI]: fc.Memo<A>
   }
 }
 
-const string = ({FastCheck: input}: fci.Str): fc.Memo<string> => fc.memo(_ => {
+const string = ({FastCheck: input}: lib.InputOf<"string", URI, string>):
+fc.Memo<string> => fc.memo(_ => {
   if (!input) return fc.string()
   // because of this https://github.com/microsoft/TypeScript/issues/33591
   switch (input.type) {
@@ -38,7 +38,8 @@ const string = ({FastCheck: input}: fci.Str): fc.Memo<string> => fc.memo(_ => {
   }
 })
 
-const number = ({FastCheck: input}: fci.Num): fc.Memo<number> => fc.memo(_ => {
+const number = ({FastCheck: input}: lib.InputOf<"number", "FastCheck", number>):
+fc.Memo<number> => fc.memo(_ => {
   if (!input) return fc.integer()
   // because of this https://github.com/microsoft/TypeScript/issues/33591
   switch(input.type) {
@@ -64,17 +65,17 @@ const number = ({FastCheck: input}: fci.Num): fc.Memo<number> => fc.memo(_ => {
   }
 })
 
-export type FCAlg = lib.Recurse<URI, "FastCheck_recurse"> 
-  & lib.Str<URI, fci.Str> & lib.Num<URI, fci.Num> & 
-  lib.Dict<URI, fci.Dict> & lib.Option<URI, "FastCheck_option"> & 
-  lib.Array<URI, "FastCheck_array">
+export type FCAlg = lib.Recurse<URI, "FastCheck"> 
+  & lib.Str<URI, "FastCheck"> & lib.Num<URI, "FastCheck"> & 
+  lib.Dict<URI> & lib.Option<URI, "FastCheck"> & 
+  lib.Array<URI, "FastCheck">
 export const FastCheck: () => FCAlg = () =>
   ({string, number, 
-    option: (x, {FastCheck_option: input}) => 
+    option: (x, {FastCheck: input}) => 
       fc.memo(n => fc.option(x(n), input || {}).map(o.fromNullable)),
-    array: (x, {FastCheck_array: input}) => fc.memo(n => fc.array(x(n), input || {})),
+    array: (x, {FastCheck: input}) => fc.memo(n => fc.array(x(n), input || {})),
     recurse: (_, f, map, i) => fc.memo(n =>
-      n <= 1 ? fc.constant(i.FastCheck_recurse.baseCase) : map(f())(n)),
+      n <= 1 ? fc.constant(i.FastCheck.baseCase) : map(f())(n)),
     dict: () => <T>(mkProps: () => lib.Props<URI, T>) => {
       const props = mkProps()
       return fc.memo(n => Object.keys(props).reduce((a, k) =>
