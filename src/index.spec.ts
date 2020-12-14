@@ -26,9 +26,21 @@ const thing = <F extends lib.Output>(): lib.RunAlg<F, Alg<F>, Thing> =>
 const Thing = thing<"Id">()
 const arbThing: fc.Arbitrary<Thing> = thing<fci.URI>().run(fci.FastCheck())(3)
 
+const thingNoRec = <F extends lib.Output>() =>
+  lib.build<F, Alg<F>>()(
+    T => T.dict({Named: 'ThingNoRec'})(() => {
+      const {foo, bar} = thingProps(T)
+      return {foo, bar}
+    }))
+const tnr = thingNoRec<"Id">()
+type ThingNoRec = lib.TypeOf<typeof tnr>
+const arbThingNoRec: fc.Arbitrary<ThingNoRec> = thingNoRec<fci.URI>().run(fci.FastCheck())(0)
+
 const Gql = gql.GQL()
-testProp('whatever', [arbThing], (_, t: Thing) => 
-  console.log(JSON.stringify(t, null, 2), gql.gqlStr(thing<"GraphQL">().run(Gql))));
+testProp('whatever', [arbThing, arbThingNoRec], (_, t: Thing, tnr: ThingNoRec) => {
+  console.log(JSON.stringify(tnr, null, 2), gql.gqlStr(thingNoRec<"GraphQL">().run(Gql)));
+  console.log(JSON.stringify(t, null, 2), gql.gqlStr(thing<"GraphQL">().run(Gql)));
+});
 
 const takeThing = (_: Thing): void => undefined
 takeThing({foo: o.some("hi"), bar: 3, tail: [o.some({foo: o.none, bar: 2, tail: []})]})
