@@ -3,23 +3,23 @@ import * as lib from './index';
 
 // Strings
 export interface StrInputs<A> extends lib.InterpInputs<A> {}
-export type Str<O extends lib.Output, I extends keyof StrInputs<any> = "Empty"> =
-  lib.Alg<'string', O, lib.InputOf<"string", I, string>, string>;
 declare module './index' {
   interface Inputs<A> {
     string: StrInputs<A>
   }
 }
+export type Str<O extends lib.Output, I extends keyof StrInputs<any> = "Empty"> =
+  lib.Alg<'string', O, lib.InputOf<"string", I, string>, string>;
 
 // Numbers
 export interface NumInputs<A> extends lib.InterpInputs<A> {}
-export type Num<O extends lib.Output, I extends keyof NumInputs<any> = "Empty"> =
-  lib.Alg<'number', O, lib.InputOf<"number", I, number>, number>
 declare module './index' {
   interface Inputs<A> {
     number: NumInputs<A>
   }
 }
+export type Num<O extends lib.Output, I extends keyof NumInputs<any> = "Empty"> =
+  lib.Alg<'number', O, lib.InputOf<"number", I, number>, number>
 
 // Dates
 export interface DateInputs<A> extends lib.InterpInputs<A> {}
