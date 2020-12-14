@@ -6,10 +6,10 @@ derive-ts is heavily inspired by morphic-ts and io-ts.
 
 The primary goals for this library are:
 
-1) Easy extension of support for new types in application code
+1) Easy addition of support for new types in application code
 2) Easy addition of new interpreters in application code
 3) Program declarations use minimal algebra _required for the program_
-4) Programs can provide interpreter specific inputs 0 or more interpreters per type
+4) Programs can provide interpreter specific inputs for zero or more interpreters per type
 5) Programs can be reasonably defined to support composition and manipulation of declarations
 6) Interpreter definitions cover minimal algebra _supported by the interpreter_
 7) Interpreters can accept or require interpreter specific inputs from programs
