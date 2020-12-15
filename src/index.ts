@@ -24,6 +24,10 @@ export type Ix<K extends string, A> = { readonly [key in K]: A }
 export type IxO<K extends string, A> = { readonly [key in K]?: A }
 export type Alg<K extends string, O extends Output, I extends object, A> = Ix<K, <T extends t.Exact<I, T>>(i: T) => Result<O, A>>
 
+export type AlgInput<A, K extends string> = A extends Alg<K, any, infer I, any> 
+  ? I extends InputOf<infer X, infer II, any>
+    ? II : never
+  : never
 
 export interface RunAlg<O extends Output, Alg, A> {
   run: (T: Alg) => Result<O, A>

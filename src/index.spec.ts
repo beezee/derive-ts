@@ -5,14 +5,14 @@ import * as fci from './interpreters/fastcheck';
 import { testProp, fc } from 'ava-fast-check';
 
 type Alg<F extends lib.Output> = 
-  lib.Recurse<F, "FastCheck" | "GraphQL"> & lib.Str<F, "FastCheck"> & 
-  lib.Num<F, "FastCheck"> & 
-  lib.Option<F, "FastCheck"> & lib.Array<F, "FastCheck"> &
-  lib.Dict<F, "Named">
+  lib.recurse<F, "FastCheck"> & lib.str<F, "FastCheck"> & 
+  lib.num<F, "FastCheck"> & 
+  lib.option<F, "FastCheck"> & lib.array<F, "FastCheck"> &
+  lib.dict<F, "Named">
 const thingProps = <F extends lib.Output>(T: Alg<F>) => ({
-  foo: T.option(T.string({FastCheck: {type: "lorem", mode: "sentences"}}),
+  foo: T.option(T.str({FastCheck: {type: "lorem", mode: "sentences"}}),
     {FastCheck: {freq: 0}}),
-  bar: T.number({FastCheck: {type: "float", max: 10}}),
+  bar: T.num({FastCheck: {type: "float", max: 10}}),
   tail: T.recurse('Thing', () => thing<F>().run(T),
       (x) => T.array(T.option(x, {}), {FastCheck: {minLength: 3, maxLength: 3}}),
       {FastCheck: {baseCase: []}}),

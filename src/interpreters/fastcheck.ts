@@ -12,7 +12,7 @@ declare module '../index' {
   }
 }
 
-const string = ({FastCheck: input}: lib.InputOf<"string", URI, string>):
+const str = ({FastCheck: input}: lib.InputOf<"str", URI, string>):
 fc.Memo<string> => fc.memo(_ => {
   if (!input) return fc.string()
   // because of this https://github.com/microsoft/TypeScript/issues/33591
@@ -38,7 +38,7 @@ fc.Memo<string> => fc.memo(_ => {
   }
 })
 
-const number = ({FastCheck: input}: lib.InputOf<"number", "FastCheck", number>):
+const num = ({FastCheck: input}: lib.InputOf<"num", "FastCheck", number>):
 fc.Memo<number> => fc.memo(_ => {
   if (!input) return fc.integer()
   // because of this https://github.com/microsoft/TypeScript/issues/33591
@@ -65,12 +65,12 @@ fc.Memo<number> => fc.memo(_ => {
   }
 })
 
-export type FCAlg = lib.Recurse<URI, "FastCheck"> 
-  & lib.Str<URI, "FastCheck"> & lib.Num<URI, "FastCheck"> & 
-  lib.Dict<URI> & lib.Option<URI, "FastCheck"> & 
-  lib.Array<URI, "FastCheck">
+export type FCAlg = lib.recurse<URI, "FastCheck"> 
+  & lib.str<URI, "FastCheck"> & lib.num<URI, "FastCheck"> & 
+  lib.dict<URI> & lib.option<URI, "FastCheck"> & 
+  lib.array<URI, "FastCheck">
 export const FastCheck: () => FCAlg = () =>
-  ({string, number, 
+  ({str, num, 
     option: (x, {FastCheck: input}) => 
       fc.memo(n => fc.option(x(n), input || {}).map(o.fromNullable)),
     array: (x, {FastCheck: input}) => fc.memo(n => fc.array(x(n), input || {})),

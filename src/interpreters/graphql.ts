@@ -22,13 +22,15 @@ const gqlChild = (gql: GQL): string =>
 const gqlPrim = (tpe: string): GQL =>
   ({prefix: '', tpe, children: '', optional: false, array: false})
 
-type GQLAlg = lib.Recurse<'GraphQL', 'GraphQL'> & lib.Str<'GraphQL'> & lib.Num<'GraphQL'> & 
-  lib.Dict<'GraphQL', 'Named'> & lib.Option<'GraphQL'> & lib.Array<'GraphQL'>
+type GQLAlg = lib.recurse<'GraphQL', 'GraphQL'> & lib.str<'GraphQL'> & 
+  lib.num<'GraphQL'> & lib.dict<'GraphQL', 'Named'> & 
+  lib.option<'GraphQL'> & lib.array<'GraphQL'>
+
 export const GQL: () => GQLAlg = () => {
   const cache = memo({})
   const mem = (id: string, fn: () => GQL): GQL => cache(id, fn)
   return {
-    string: () => gqlPrim('String'), number: () => gqlPrim('Integer'),
+    str: () => gqlPrim('String'), num: () => gqlPrim('Integer'),
     option: (ga) => ({...ga, optional: true}),
     // TODO - how will you capture T.option(T.array(T.option(x))) with a flat structure ??
     array: (ga) => ({...ga, array: true}),

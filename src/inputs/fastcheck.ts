@@ -29,22 +29,22 @@ type FcNumInputs =
 type FCRec<A> = {baseCase: A}
 
 declare module '../types' {
-  export interface StrInputs<A> {
+  export interface strInputs<A> {
     [URI]: FcStrInputs
   }
-  export interface NumInputs<A> {
+  export interface numInputs<A> {
     [URI]: FcNumInputs
   }
-  export interface DateInputs<A> {
+  export interface dateInputs<A> {
     [URI]: {min?: builtins.JSDate, max?: builtins.JSDate}
   }
-  export interface RecurseInputs<A> {
+  export interface recurseInputs<A> {
     [URI]: FCRec<A>
   }
-  export interface OptionInputs<A> {
+  export interface optionInputs<A> {
     [URI]?: {freq?: number}
   }
-  export interface ArrayInputs<A> {
+  export interface arrayInputs<A> {
     [URI]?: fc.ArrayConstraints
   }
 }

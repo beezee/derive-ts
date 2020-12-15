@@ -2,67 +2,67 @@ import * as o from 'fp-ts/Option';
 import * as lib from './index';
 
 // Strings
-export interface StrInputs<A> extends lib.InterpInputs<A> {}
+export interface strInputs<A> extends lib.InterpInputs<A> {}
 declare module './index' {
   interface Inputs<A> {
-    string: StrInputs<A>
+    str: strInputs<A>
   }
 }
-export type Str<O extends lib.Output, I extends keyof StrInputs<any> = "Empty"> =
-  lib.Alg<'string', O, lib.InputOf<"string", I, string>, string>;
+export type str<O extends lib.Output, I extends keyof strInputs<any> = "Empty"> =
+  lib.Alg<'str', O, lib.InputOf<"str", I, string>, string>;
 
 // Numbers
-export interface NumInputs<A> extends lib.InterpInputs<A> {}
+export interface numInputs<A> extends lib.InterpInputs<A> {}
 declare module './index' {
   interface Inputs<A> {
-    number: NumInputs<A>
+    num: numInputs<A>
   }
 }
-export type Num<O extends lib.Output, I extends keyof NumInputs<any> = "Empty"> =
-  lib.Alg<'number', O, lib.InputOf<"number", I, number>, number>
+export type num<O extends lib.Output, I extends keyof numInputs<any> = "Empty"> =
+  lib.Alg<'num', O, lib.InputOf<"num", I, number>, number>
 
 // Dates
-export interface DateInputs<A> extends lib.InterpInputs<A> {}
+export interface dateInputs<A> extends lib.InterpInputs<A> {}
 declare module './index' {
   interface Inputs<A> {
-    date: DateInputs<A>
+    date: dateInputs<A>
   }
 }
-export type Date<O extends lib.Output, I extends keyof DateInputs<any> = "Empty"> =
+export type date<O extends lib.Output, I extends keyof dateInputs<any> = "Empty"> =
   lib.Alg<'date', O, lib.InputOf<"date", I, lib.JSDate>, lib.JSDate>
 
 // Option
-export interface OptionInputs<A> extends lib.InterpInputs<A> {}
+export interface optionInputs<A> extends lib.InterpInputs<A> {}
 declare module './index' {
   export interface Inputs<A> {
-    option: OptionInputs<A>
+    option: optionInputs<A>
   }
 }
-export type Option<O extends lib.Output, I extends keyof OptionInputs<any> = "Empty"> = {
+export type option<O extends lib.Output, I extends keyof optionInputs<any> = "Empty"> = {
   readonly option: <A>(res: lib.Result<O, A>, i: lib.InputOf<"option", I, A>) => 
     lib.Result<O, o.Option<A>>
 }
 
 // Array
-export interface ArrayInputs<A> extends lib.InterpInputs<A> {}
+export interface arrayInputs<A> extends lib.InterpInputs<A> {}
 declare module './index' {
   export interface Inputs<A> {
-    array: ArrayInputs<A>
+    array: arrayInputs<A>
   }
 }
-export type Array<O extends lib.Output, I extends keyof ArrayInputs<any> = "Empty"> = {
+export type array<O extends lib.Output, I extends keyof arrayInputs<any> = "Empty"> = {
   readonly array: <A>(res: lib.Result<O, A>, i: lib.InputOf<"array", I, A>) =>
     lib.Result<O, A[]>
 }
 
 // Recurse
-export interface RecurseInputs<A> extends lib.InterpInputs<A> {}
+export interface recurseInputs<A> extends lib.InterpInputs<A> {}
 declare module './index' {
   export interface Inputs<A> {
-    recurse: RecurseInputs<A>
+    recurse: recurseInputs<A>
   }
 }
-export type Recurse<O extends lib.Output, I extends keyof RecurseInputs<any> = "Empty"> = {
+export type recurse<O extends lib.Output, I extends keyof recurseInputs<any> = "Empty"> = {
   readonly recurse: <A, B>(
     id: string, res: () => lib.Result<O, A>,
     map: (a: lib.Result<O, A>) => lib.Result<O, B>,
@@ -71,15 +71,15 @@ export type Recurse<O extends lib.Output, I extends keyof RecurseInputs<any> = "
 
 // Dict
 export type Props<O extends lib.Output, T> = { [K in keyof T]: lib.Result<O, T[K]> };
-export interface DictInputs<A> extends lib.InterpInputs<A> {
+export interface dictInputs<A> extends lib.InterpInputs<A> {
   Named: string
 }
 declare module './index' {
   export interface Inputs<A> {
-    dict: DictInputs<A>
+    dict: dictInputs<A>
   }
 }
-export type Dict<O extends lib.Output, I extends keyof DictInputs<any> = "Empty"> = {
+export type dict<O extends lib.Output, I extends keyof dictInputs<any> = "Empty"> = {
   dict: (i: lib.InputOf<"dict", I, unknown>) => <T>(props: () => Props<O, T>) =>
     lib.Result<O, T>;
 };
