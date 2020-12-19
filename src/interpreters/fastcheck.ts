@@ -7,7 +7,7 @@ export const URI = 'FastCheck' as const
 export type URI = typeof URI
 
 declare module '../index' {
-  export interface Outputs<A> {
+  export interface Targets<A> {
     [URI]: fc.Memo<A>
   }
 }
@@ -65,18 +65,18 @@ fc.Memo<number> => fc.memo(_ => {
   }
 })
 
-export type FCAlg = lib.recurse<URI, "FastCheck"> 
-  & lib.str<URI, "FastCheck"> & lib.num<URI, "FastCheck"> & 
-  lib.dict<URI> & lib.option<URI, "FastCheck"> & 
-  lib.array<URI, "FastCheck">
+export type FCAlg = lib.Alg<URI, 
+  "str" | "num" | "option" | "array" | "recurse" | "dict",
+  URI>
+
 export const FastCheck: () => FCAlg = () =>
   ({str, num, 
-    option: (x, {FastCheck: input}) => 
+    option: ({of: x, FastCheck: input}) => 
       fc.memo(n => fc.option(x(n), input || {}).map(o.fromNullable)),
-    array: (x, {FastCheck: input}) => fc.memo(n => fc.array(x(n), input || {})),
+    array: ({of: x, FastCheck: input}) => fc.memo(n => fc.array(x(n), input || {})),
     recurse: (_, f, map, i) => fc.memo(n =>
       n <= 1 ? fc.constant(i.FastCheck.baseCase) : map(f())(n)),
-    dict: () => <T>(mkProps: () => lib.Props<URI, T>) => {
+    dict: <T>({props: mkProps}: lib.DictArgs<URI, URI, T>) => {
       const props = mkProps()
       return fc.memo(n => Object.keys(props).reduce((a, k) =>
         a.chain(o => props[k as keyof T](n-1).map(v => ({...o, [k]: v}))), fc.constant({} as T)))

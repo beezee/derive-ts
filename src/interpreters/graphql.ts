@@ -6,7 +6,7 @@ type GQL = {
   array: boolean}
 
 declare module "../index" {
-  export interface Outputs<A> {
+  export interface Targets<A> {
     GraphQL: GQL
   }
 }
@@ -22,20 +22,20 @@ const gqlChild = (gql: GQL): string =>
 const gqlPrim = (tpe: string): GQL =>
   ({prefix: '', tpe, children: '', optional: false, array: false})
 
-type GQLAlg = lib.recurse<'GraphQL', 'GraphQL'> & lib.str<'GraphQL'> & 
-  lib.num<'GraphQL'> & lib.dict<'GraphQL', 'Named'> & 
-  lib.option<'GraphQL'> & lib.array<'GraphQL'>
+type GQLAlg = lib.Alg<'GraphQL', 
+  "str" | "num" | "option" | "array" | "recurse" | "dict",
+  "Named">
 
 export const GQL: () => GQLAlg = () => {
   const cache = memo({})
   const mem = (id: string, fn: () => GQL): GQL => cache(id, fn)
   return {
     str: () => gqlPrim('String'), num: () => gqlPrim('Integer'),
-    option: (ga) => ({...ga, optional: true}),
+    option: ({of}) => ({...of, optional: true}),
     // TODO - how will you capture T.option(T.array(T.option(x))) with a flat structure ??
-    array: (ga) => ({...ga, array: true}),
+    array: ({of}) => ({...of, array: true}),
     recurse: (id, f, map = (x) => x) => map(mem(id, f)),
-    dict: ({Named}) => <T>(mkProps: () => lib.Props<'GraphQL', T>) => {
+    dict: <T>({Named, props: mkProps}: lib.DictArgs<"GraphQL", "Named", T>) => {
       const tpe = mem(Named, () => 
         ({prefix: '', tpe: Named, children: '', optional: false, array: false})).tpe
       const props = mkProps()

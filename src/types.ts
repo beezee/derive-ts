@@ -1,85 +1,65 @@
 import * as o from 'fp-ts/Option';
 import * as lib from './index';
+import { Target } from './index';
 
 // Strings
-export interface strInputs<A> extends lib.InterpInputs<A> {}
 declare module './index' {
-  interface Inputs<A> {
-    str: strInputs<A>
+  interface _Alg<T extends Target, I extends Input> {
+    str: (i: lib.InputOf<'str', I, string>) => lib.Result<T, string>
   }
 }
-export type str<O extends lib.Output, I extends keyof strInputs<any> = "Empty"> =
-  lib.Alg<'str', O, lib.InputOf<"str", I, string>, string>;
 
 // Numbers
-export interface numInputs<A> extends lib.InterpInputs<A> {}
 declare module './index' {
-  interface Inputs<A> {
-    num: numInputs<A>
+  interface _Alg<T extends Target, I extends Input> {
+    num: (i: lib.InputOf<'num', I, number>) => lib.Result<T, number>
   }
 }
-export type num<O extends lib.Output, I extends keyof numInputs<any> = "Empty"> =
-  lib.Alg<'num', O, lib.InputOf<"num", I, number>, number>
 
 // Dates
-export interface dateInputs<A> extends lib.InterpInputs<A> {}
 declare module './index' {
-  interface Inputs<A> {
-    date: dateInputs<A>
+  interface _Alg<T extends Target, I extends Input> {
+    date: (i: lib.InputOf<'date', I, Date>) => lib.Result<T, Date>
   }
 }
-export type date<O extends lib.Output, I extends keyof dateInputs<any> = "Empty"> =
-  lib.Alg<'date', O, lib.InputOf<"date", I, lib.JSDate>, lib.JSDate>
 
 // Option
-export interface optionInputs<A> extends lib.InterpInputs<A> {}
 declare module './index' {
-  export interface Inputs<A> {
-    option: optionInputs<A>
+  interface _Alg<T extends Target, I extends Input> {
+    option: <A>(i: {of: lib.Result<T, A>} & lib.InputOf<'option', I, A>) =>
+      lib.Result<T, o.Option<A>>
   }
-}
-export type option<O extends lib.Output, I extends keyof optionInputs<any> = "Empty"> = {
-  readonly option: <A>(res: lib.Result<O, A>, i: lib.InputOf<"option", I, A>) => 
-    lib.Result<O, o.Option<A>>
 }
 
 // Array
-export interface arrayInputs<A> extends lib.InterpInputs<A> {}
 declare module './index' {
-  export interface Inputs<A> {
-    array: arrayInputs<A>
+  interface _Alg<T extends Target, I extends Input> {
+    array: <A>(i: {of: lib.Result<T, A>} & lib.InputOf<'array', I, A>) =>
+      lib.Result<T, A[]>
   }
-}
-export type array<O extends lib.Output, I extends keyof arrayInputs<any> = "Empty"> = {
-  readonly array: <A>(res: lib.Result<O, A>, i: lib.InputOf<"array", I, A>) =>
-    lib.Result<O, A[]>
 }
 
 // Recurse
-export interface recurseInputs<A> extends lib.InterpInputs<A> {}
 declare module './index' {
-  export interface Inputs<A> {
-    recurse: recurseInputs<A>
+  interface _Alg<T extends Target, I extends Input> {
+    recurse: <A, B>(
+      id: string, res: () => lib.Result<T, A>,
+      map: (a: lib.Result<T, A>) => lib.Result<T, B>,
+      i: lib.InputOf<"recurse", I, B>) => lib.Result<T, B>
   }
-}
-export type recurse<O extends lib.Output, I extends keyof recurseInputs<any> = "Empty"> = {
-  readonly recurse: <A, B>(
-    id: string, res: () => lib.Result<O, A>,
-    map: (a: lib.Result<O, A>) => lib.Result<O, B>,
-    i: lib.InputOf<"recurse", I, B>) => lib.Result<O, B>
 }
 
 // Dict
-export type Props<O extends lib.Output, T> = { [K in keyof T]: lib.Result<O, T[K]> };
-export interface dictInputs<A> extends lib.InterpInputs<A> {
-  Named: string
-}
+export type Props<T extends Target, P> = { [K in keyof P]: lib.Result<T, P[K]> };
+export type DictArgs<T extends Target, I extends lib.Input, P> =
+  lib.InputOf<"dict", I, P> & {props: () => Props<T, P>}
+
 declare module './index' {
-  export interface Inputs<A> {
-    dict: dictInputs<A>
+  interface Inputs<A> {
+    Named: { dict: string }
   }
-}
-export type dict<O extends lib.Output, I extends keyof dictInputs<any> = "Empty"> = {
-  dict: (i: lib.InputOf<"dict", I, unknown>) => <T>(props: () => Props<O, T>) =>
-    lib.Result<O, T>;
+  interface _Alg<T extends Target, I extends Input> {
+    dict: <P>(i: DictArgs<T, I, P>) =>
+      lib.Result<T, P>;
+  }
 };
