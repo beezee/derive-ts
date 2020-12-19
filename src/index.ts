@@ -4,7 +4,7 @@ export * from './builtins';
 
 export interface Targets<A> {
   Id: A
-  Type: A
+  Type: A | null
 };
 
 export type Target = keyof Targets<any>
@@ -35,4 +35,4 @@ export type Alg<T extends Target, K extends keyof _Alg<any, any>, I extends Inpu
 export const Type: Alg<"Type", keyof _Alg<any, any>> = 
   new Proxy({}, {get: () => (...args: any) => null as any}) as any
 
-export type TypeOf<A> = A extends Result<any, infer T> ? T : never
+export type TypeOf<A> = NonNullable<A>

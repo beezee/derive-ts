@@ -10,7 +10,7 @@ type Alg<F extends lib.Target> = lib.Alg<F,
 const thingProps = <F extends lib.Target>(T: Alg<F>) => ({
   foo: T.option({
     of: T.str({FastCheck: {type: "lorem", mode: "sentences"}}),
-    FastCheck: {freq: 0}}),
+    FastCheck: {freq: 10}}),
   bar: T.num({FastCheck: {type: "float", max: 10}}),
   tail: T.recurse('Thing', () => thing<F>(T),
       (of) => T.array({of: T.option({of}), FastCheck: {minLength: 3, maxLength: 3}}),
@@ -24,7 +24,7 @@ type Thing = {foo: o.Option<string>, bar: number, tail: o.Option<Thing>[]}
 
 const thing = <F extends lib.Target>(T: Alg<F>): lib.Result<F, Thing> =>
   T.dict({Named: 'Thing', props: () => thingProps(T)})
-const arbThing: fc.Arbitrary<Thing> = thing<fci.URI>(fci.FastCheck())(3)
+const arbThing: fc.Arbitrary<Thing> = thing(fci.FastCheck())(3)
 
 const thingNoRec = <F extends lib.Target>(T: Alg<F>) =>
     T.dict({Named: 'ThingNoRec', props: () => {
@@ -33,8 +33,8 @@ const thingNoRec = <F extends lib.Target>(T: Alg<F>) =>
     }})
 
 const tnr = thingNoRec(lib.Type)
-type ThingNoRec = typeof tnr
-const arbThingNoRec: fc.Arbitrary<ThingNoRec> = thingNoRec<fci.URI>(fci.FastCheck())(0)
+type ThingNoRec = lib.TypeOf<typeof tnr>
+const arbThingNoRec: fc.Arbitrary<ThingNoRec> = thingNoRec(fci.FastCheck())(0)
 const takeThingNoRec = (_: ThingNoRec): void => undefined
 takeThingNoRec({foo: o.some("hi"), bar: 3})
 
