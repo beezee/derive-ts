@@ -3,10 +3,12 @@ import * as lib from './index';
 import * as gql from './interpreters/graphql';
 import * as fci from './interpreters/fastcheck';
 import { testProp, fc } from 'ava-fast-check';
+import { buildASTSchema, printSchema } from 'graphql';
 
-type Alg<F extends lib.Target> = lib.Alg<F, 
-  "str" | "num" | "option" | "array" | "recurse" | "dict",
-  "FastCheck" | "Named">
+type Ops = "str" | "num" | "option" | "array" | "recurse" | "dict"
+type Inputs = "FastCheck" | "Named"
+
+type Alg<F extends lib.Target> = lib.Alg<F, Ops, Inputs>
 const thingProps = <F extends lib.Target>(T: Alg<F>) => ({
   foo: T.option({
     of: T.str({FastCheck: {type: "lorem", mode: "sentences"}}),
@@ -26,11 +28,13 @@ const thing = <F extends lib.Target>(T: Alg<F>): lib.Result<F, Thing> =>
   T.dict({Named: 'Thing', props: () => thingProps(T)})
 const arbThing: fc.Arbitrary<Thing> = thing(fci.FastCheck())(3)
 
+const thingNoRecProps = <F extends lib.Target>(T: Alg<F>) => {
+  const {foo, bar} = thingProps(T)
+  return {foo, bar}
+}
+
 const thingNoRec = <F extends lib.Target>(T: Alg<F>) =>
-    T.dict({Named: 'ThingNoRec', props: () => {
-      const {foo, bar} = thingProps(T)
-      return {foo, bar}
-    }})
+  T.dict({Named: 'ThingNoRec', props: () => thingNoRecProps(T)})
 
 const tnr = thingNoRec(lib.Type)
 type ThingNoRec = lib.TypeOf<typeof tnr>
@@ -38,10 +42,29 @@ const arbThingNoRec: fc.Arbitrary<ThingNoRec> = thingNoRec(fci.FastCheck())(0)
 const takeThingNoRec = (_: ThingNoRec): void => undefined
 takeThingNoRec({foo: o.some("hi"), bar: 3})
 
+type ResolverAlg<F extends lib.Target> = lib.Alg<F, Ops | "gqlResolver", Inputs>
+
+const tnrResolver = <F extends lib.Target>(T: ResolverAlg<F>) =>
+  T.dict({Named: 'ThingResolvers', props: () =>
+    ({...thingNoRecProps(T),
+     count: T.gqlResolver({
+      parent: thingNoRec(T), args: T.str({}),
+      context: T.dict({Named: 'TRArgs', props: () => ({})}),
+      output: T.num({})})})})
+
+const trs = tnrResolver(lib.Type)
+type ThingResolvers = lib.TypeOf<typeof trs>
+const takeThingResolvers = (_: ThingResolvers): void => undefined
+takeThingResolvers({foo: o.some("hi"), bar: 3,
+  count: (parent: ThingNoRec, args: string, context: unknown) => Promise.resolve(2)})
+
+const schema = (x: any) =>
+  buildASTSchema({kind: "Document", definitions: [x]})
+
 const Gql = gql.GQL()
 testProp('whatever', [arbThing, arbThingNoRec], (_, t: Thing, tnr: ThingNoRec) => {
-  console.log(JSON.stringify(tnr, null, 2), gql.gqlStr(thingNoRec(Gql)));
-  console.log(JSON.stringify(t, null, 2), gql.gqlStr(thing(Gql)));
+  console.log(JSON.stringify(tnr, null, 2), printSchema(schema(thingNoRec(Gql))));
+  console.log(JSON.stringify(t, null, 2), printSchema(schema(thing(Gql))));
 });
 
 const takeThing = (_: Thing): void => undefined

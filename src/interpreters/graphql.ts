@@ -1,5 +1,6 @@
 import * as lib from '../index';
 import { memo } from '../util';
+import type * as ast from 'graphql/language/ast';
 
 type GQL = {
   prefix: string, tpe: string, children: string, optional: boolean,
@@ -7,20 +8,46 @@ type GQL = {
 
 declare module "../index" {
   export interface Targets<A> {
-    GraphQL: GQL
+    GraphQL: ast.TypeNode | ast.TypeDefinitionNode
   }
 }
 
-export const gqlStr = (gql: GQL): string => {
-  const arr = gql.array ? ['[', ']'] : ['', '']
-  return arr[0] + gql.prefix + gql.tpe + gql.children + (gql.optional ? '' : '!') + arr[1]
+const gqlPrim = (tpe: string): ast.NonNullTypeNode =>
+  ({"kind": "NonNullType",
+    "type": {"kind": "NamedType", "name": {"kind": "Name", "value": tpe,}}})
+
+const option = (node: ast.TypeNode | ast.TypeDefinitionNode) =>
+  node.kind === "NonNullType" ? node.type : node
+
+function isTypeNode(x: any): x is ast.TypeNode {
+  return "kind" in x && ["NamedType", "ListType", "NonNullType"].includes(x.kind)
 }
 
-const gqlChild = (gql: GQL): string =>
-  gqlStr({...gql, prefix: "", children: ""})
+const list = (node: ast.TypeNode | ast.TypeDefinitionNode): ast.TypeNode | ast.TypeDefinitionNode =>
+  isTypeNode(node)
+    ? ({kind: "NonNullType", type: {kind: "ListType", type: node}})
+    : node
 
-const gqlPrim = (tpe: string): GQL =>
-  ({prefix: '', tpe, children: '', optional: false, array: false})
+const object = (name: string, fields: ast.FieldDefinitionNode[]): ast.ObjectTypeDefinitionNode =>
+  ({kind: "ObjectTypeDefinition",
+    name: {kind: "Name", value: name},
+    fields})
+
+const field = (name: string, node: ast.TypeNode | ast.TypeDefinitionNode):
+ast.FieldDefinitionNode =>
+  ({kind: "FieldDefinition",
+    name: {kind: "Name", value: name},
+    type: isTypeNode(node)
+      ? node : gqlPrim(node.name.value)})
+
+declare module "../index" {
+  interface _Alg<T extends Target, I extends Input> {
+    gqlResolver: <Parent, Args, Context, Output>(i: lib.InputOf<"gqlResolver", I, unknown> & {
+      parent: Result<T, Parent>, args: Result<T, Args>,
+      context: Result<T, Context>, output: Result<T, Output>}) =>
+      Result<T, (parent: Parent, args: Args, context: Context) => Promise<Output>>
+  }
+}
 
 type GQLAlg = lib.Alg<'GraphQL', 
   "str" | "num" | "option" | "array" | "recurse" | "dict",
@@ -28,21 +55,18 @@ type GQLAlg = lib.Alg<'GraphQL',
 
 export const GQL: () => GQLAlg = () => {
   const cache = memo({})
-  const mem = (id: string, fn: () => GQL): GQL => cache(id, fn)
+  const mem = (id: string, fn: () => ast.TypeNode | ast.TypeDefinitionNode):
+  ast.TypeNode | ast.TypeDefinitionNode => cache(id, fn)
   return {
-    str: () => gqlPrim('String'), num: () => gqlPrim('Integer'),
-    option: ({of}) => ({...of, optional: true}),
-    // TODO - how will you capture T.option(T.array(T.option(x))) with a flat structure ??
-    array: ({of}) => ({...of, array: true}),
+    str: () => gqlPrim('String'), num: () => gqlPrim('Int'),
+    option: ({of}) => option(of),
+    array: ({of}) => list(of),
     recurse: (id, f, map = (x) => x) => map(mem(id, f)),
     dict: <T>({Named, props: mkProps}: lib.DictArgs<"GraphQL", "Named", T>) => {
-      const tpe = mem(Named, () => 
-        ({prefix: '', tpe: Named, children: '', optional: false, array: false})).tpe
+      mem(Named, () => gqlPrim(Named))
       const props = mkProps()
-      return ({prefix: 'type ', tpe,
-        children: ` { ${Object.keys(props).map(k =>
-         `${k}: ${gqlChild(props[k as keyof lib.Props<'GraphQL', T>])};`).join(" ")} }`,
-        optional: true, array: false})
+      return object(Named, Object.keys(props)
+        .map(k => field(k, props[k as keyof lib.Props<"GraphQL", T>] as ast.TypeNode)))
     }
   }
 };

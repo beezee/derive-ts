@@ -31,12 +31,12 @@ type FCRec<A> = {baseCase: A}
 declare module '../index' {
   export interface Inputs<A> {
     [URI]: {
-      str: FcStrInputs,
-      num: FcNumInputs,
-      date: {min?: builtins.JSDate, max?: builtins.JSDate}
+      str?: FcStrInputs,
+      num?: FcNumInputs,
+      date?: {min?: builtins.JSDate, max?: builtins.JSDate}
       recurse: FCRec<A>
       option?: {freq: number}
-      array: fc.ArrayConstraints
+      array?: fc.ArrayConstraints
     }
   }
 }
