@@ -48,7 +48,7 @@ const tnrResolver = <F extends lib.Target>(T: ResolverAlg<F>) =>
   T.dict({Named: 'ThingResolvers', props: () =>
     ({...thingNoRecProps(T),
      count: T.gqlResolver({
-      parent: thingNoRec(T), args: T.str({}),
+      parent: thingNoRec(T), args: {Named: "ThingCountInput", props: () => ({foo: T.str({})})},
       context: T.dict({Named: 'TRArgs', props: () => ({})}),
       output: T.num({})})})})
 
@@ -56,15 +56,19 @@ const trs = tnrResolver(lib.Type)
 type ThingResolvers = lib.TypeOf<typeof trs>
 const takeThingResolvers = (_: ThingResolvers): void => undefined
 takeThingResolvers({foo: o.some("hi"), bar: 3,
-  count: (parent: ThingNoRec, args: string, context: unknown) => Promise.resolve(2)})
+  count: (parent: ThingNoRec, args: {foo: string}, context: unknown) => Promise.resolve(2)})
 
 const schema = (x: any) =>
-  buildASTSchema({kind: "Document", definitions: [x]})
+  buildASTSchema({kind: "Document", definitions: x})
 
 const Gql = gql.GQL()
 testProp('whatever', [arbThing, arbThingNoRec], (_, t: Thing, tnr: ThingNoRec) => {
-  console.log(JSON.stringify(tnr, null, 2), printSchema(schema(thingNoRec(Gql))));
-  console.log(JSON.stringify(t, null, 2), printSchema(schema(thing(Gql))));
+  thingNoRec(Gql)
+  thing(Gql)
+  tnrResolver(Gql)
+  console.log(JSON.stringify(tnr, null, 2))
+  console.log(JSON.stringify(t, null, 2));
+  console.log(printSchema(schema(Gql.definitions)))
 });
 
 const takeThing = (_: Thing): void => undefined
